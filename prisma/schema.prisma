@@ -1,0 +1,81 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String              @id @default(cuid())
+  name         String
+  email        String              @unique
+  passwordHash String
+  role         String              @default("trader") // "trader" | "admin"
+  businessName String?
+  consentGiven Boolean             @default(false)
+  consentAt    DateTime?
+  applications TraderApplication[]
+  createdAt    DateTime            @default(now())
+  updatedAt    DateTime            @updatedAt
+}
+
+model MarketZone {
+  id           String              @id @default(cuid())
+  name         String
+  city         String              @default("Paisley")
+  description  String
+  address      String
+  lat          Float
+  lng          Float
+  openDates    String
+  stalls       Stall[]
+  events       FestiveEvent[]
+  applications TraderApplication[]
+  createdAt    DateTime            @default(now())
+}
+
+model Stall {
+  id           String     @id @default(cuid())
+  name         String
+  category     String     // "German Specialities" | "Food & Drink" | "Artisan Crafts" | "Gifts & Decor"
+  description  String
+  chaletNumber String
+  priceRange   String     // "£" | "££" | "£££"
+  zoneId       String
+  zone         MarketZone @relation(fields: [zoneId], references: [id], onDelete: Cascade)
+  createdAt    DateTime   @default(now())
+}
+
+model TraderApplication {
+  id             String     @id @default(cuid())
+  businessName   String
+  contactName    String
+  email          String
+  phone          String
+  category       String
+  chaletSize     String
+  description    String
+  hygieneCertRef String?
+  gdprConsent    Boolean    @default(true)
+  status         String     @default("pending") // "pending" | "approved" | "rejected"
+  adminNotes     String?
+  zoneId         String
+  zone           MarketZone @relation(fields: [zoneId], references: [id], onDelete: Cascade)
+  userId         String?
+  user           User?      @relation(fields: [userId], references: [id], onDelete: SetNull)
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+}
+
+model FestiveEvent {
+  id          String     @id @default(cuid())
+  title       String
+  description String
+  eventDate   DateTime
+  category    String     // "Live Music" | "Family" | "Workshop" | "Parade"
+  zoneId      String
+  zone        MarketZone @relation(fields: [zoneId], references: [id], onDelete: Cascade)
+  createdAt   DateTime   @default(now())
+}

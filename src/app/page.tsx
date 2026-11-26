@@ -1,103 +1,137 @@
-import Image from "next/image";
+import Link from 'next/link';
+import { prisma } from '@/lib/prisma';
+import { MapPin, Store, Calendar, Sparkles, ArrowRight, ShieldCheck } from 'lucide-react';
 
-export default function Home() {
+export const dynamic = 'force-dynamic';
+
+export default async function HomePage() {
+  const [zoneCount, stallCount, eventCount, zones] = await Promise.all([
+    prisma.marketZone.count(),
+    prisma.stall.count(),
+    prisma.festiveEvent.count(),
+    prisma.marketZone.findMany({
+      include: { _count: { select: { stalls: true, events: true } } },
+      orderBy: { name: 'asc' },
+    }),
+  ]);
+
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+    <div>
+      {/* Hero Banner */}
+      <section className="relative bg-gradient-to-br from-emerald-950 via-emerald-900 to-rose-950 text-white py-20 px-4">
+        <div className="max-w-6xl mx-auto">
+          <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-400/20 text-amber-300 text-xs font-semibold tracking-wide uppercase mb-5 border border-amber-400/30">
+            <Sparkles className="w-3.5 h-3.5" /> 27 November – 24 December 2026 • Paisley Town Centre
+          </span>
+          <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight leading-tight max-w-3xl">
+            Experience the Magic of <span className="text-amber-400">Paisley Christmas Markets</span>
+          </h1>
+          <p className="mt-5 text-lg text-emerald-100/90 max-w-2xl leading-relaxed">
+            Inspired by traditional German Weinachtsmärkte and rooted in Renfrewshire’s craft heritage.
+            Browse illuminated timber chalets around Paisley Abbey, enjoy spiced Glühwein and Bratwurst,
+            or apply online to host your own festive stall.
+          </p>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+          <div className="mt-8 flex flex-wrap gap-4">
+            <Link
+              href="/markets"
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-emerald-950 font-bold shadow-lg transition"
+            >
+              Explore Markets &amp; Map <ArrowRight className="w-4 h-4" />
+            </Link>
+            <Link
+              href="/apply"
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-white/10 hover:bg-white/20 text-white font-semibold border border-white/25 transition"
+            >
+              Apply as a Trader
+            </Link>
+          </div>
+
+          {/* 实时数据库统计卡片 */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-14 max-w-3xl">
+            <div className="bg-white/10 backdrop-blur rounded-xl p-4 border border-white/15">
+              <div className="flex items-center gap-2 text-amber-300 text-sm font-medium">
+                <MapPin className="w-4 h-4" /> Market Zones
+              </div>
+              <p className="text-3xl font-bold mt-1">{zoneCount}</p>
+              <p className="text-xs text-emerald-200/80">Historic Paisley landmarks</p>
+            </div>
+            <div className="bg-white/10 backdrop-blur rounded-xl p-4 border border-white/15">
+              <div className="flex items-center gap-2 text-amber-300 text-sm font-medium">
+                <Store className="w-4 h-4" /> Active Chalets
+              </div>
+              <p className="text-3xl font-bold mt-1">{stallCount}</p>
+              <p className="text-xs text-emerald-200/80">Food, drink &amp; artisan gifts</p>
+            </div>
+            <div className="bg-white/10 backdrop-blur rounded-xl p-4 border border-white/15">
+              <div className="flex items-center gap-2 text-amber-300 text-sm font-medium">
+                <Calendar className="w-4 h-4" /> Festive Events
+              </div>
+              <p className="text-3xl font-bold mt-1">{eventCount}</p>
+              <p className="text-xs text-emerald-200/80">Music, parades &amp; workshops</p>
+            </div>
+          </div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+      </section>
+
+      {/* 佩斯利 4 大主题集市区 */}
+      <section className="max-w-6xl mx-auto px-4 mt-16">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
+          <div>
+            <h2 className="text-2xl md:text-3xl font-bold text-emerald-950">Four Festive Market Zones</h2>
+            <p className="text-gray-600 mt-1">
+              Designed on a reusable multi-zone pattern so organisers can easily expand across towns and seasons.
+            </p>
+          </div>
+          <Link href="/markets" className="text-rose-800 font-semibold hover:underline inline-flex items-center gap-1">
+            View interactive map <ArrowRight className="w-4 h-4" />
+          </Link>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {zones.map((zone) => (
+            <div
+              key={zone.id}
+              className="bg-white rounded-2xl p-6 border border-stone-200 shadow-sm hover:shadow-md transition"
+            >
+              <div className="flex items-start justify-between gap-3">
+                <h3 className="text-xl font-bold text-emerald-950">{zone.name}</h3>
+                <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-900">
+                  {zone._count.stalls} Stalls
+                </span>
+              </div>
+              <p className="text-xs text-amber-700 font-medium mt-1 flex items-center gap-1">
+                <MapPin className="w-3.5 h-3.5" /> {zone.address} • {zone.openDates}
+              </p>
+              <p className="text-gray-600 text-sm mt-3 leading-relaxed">{zone.description}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* 商户入驻与平台治理亮点 */}
+      <section className="max-w-6xl mx-auto px-4 mt-16">
+        <div className="bg-rose-950 text-white rounded-3xl p-8 md:p-10 flex flex-col md:flex-row items-center justify-between gap-8">
+          <div className="max-w-2xl">
+            <span className="inline-flex items-center gap-1.5 text-amber-300 text-xs font-semibold uppercase">
+              <ShieldCheck className="w-4 h-4" /> For Traders &amp; Event Organisers
+            </span>
+            <h2 className="text-2xl md:text-3xl font-bold mt-2">
+              Want to trade at Paisley Christmas Markets 2026?
+            </h2>
+            <p className="text-rose-100/90 mt-2 text-sm md:text-base">
+              Submit your wooden chalet pitch online, track approval status in real time, and manage your
+              personal data under UK GDPR standards. Organisers review and publish approved stalls in one click.
+            </p>
+          </div>
+          <Link
+            href="/apply"
+            className="shrink-0 px-6 py-3.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-rose-950 font-bold transition shadow-lg"
+          >
+            Start Trader Application
+          </Link>
+        </div>
+      </section>
     </div>
   );
 }
